@@ -1,0 +1,9 @@
+{
+ "L": 26,
+ "N": 195,
+ "held": 59,
+ "value_readable": 0.75,
+ "relation_acc": 1.0,
+ "entity_top1": 0.797,
+ "entity_top5": 1.0
+}

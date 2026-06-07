@@ -1,0 +1,28 @@
+{
+ "layer": 10,
+ "probe": "logreg",
+ "train_relations": [
+  "capital",
+  "currency",
+  "language"
+ ],
+ "entities": 15,
+ "train_acc": 1.0,
+ "synonym_generalisation": 1.0,
+ "per_synonym": {
+  "seat": 1.0,
+  "metropolis": 1.0,
+  "money": 1.0,
+  "cash": 1.0,
+  "tongue": 1.0,
+  "speech": 1.0
+ },
+ "examples": [
+  "seat->capital (15/15)",
+  "metropolis->capital (15/15)",
+  "money->currency (15/15)",
+  "cash->currency (15/15)",
+  "tongue->language (15/15)",
+  "speech->language (15/15)"
+ ]
+}

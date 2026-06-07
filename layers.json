@@ -1,0 +1,337 @@
+{
+ "The capital of Australia is": {
+  "correct": "Canberra",
+  "salient": "Sydney",
+  "crossover_layer": 26,
+  "by_layer": {
+   "0": {
+    "top": "\u5426",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "8": {
+    "top": "v\u00e0",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "12": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "16": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "20": {
+    "top": "located",
+    "p_correct": 0.0,
+    "p_salient": 0.001
+   },
+   "22": {
+    "top": "what",
+    "p_correct": 0.001,
+    "p_salient": 0.007
+   },
+   "24": {
+    "top": "Sydney",
+    "p_correct": 0.225,
+    "p_salient": 0.475
+   },
+   "26": {
+    "top": "Canberra",
+    "p_correct": 0.923,
+    "p_salient": 0.076
+   },
+   "28": {
+    "top": "Canberra",
+    "p_correct": 0.989,
+    "p_salient": 0.011
+   },
+   "30": {
+    "top": "Canberra",
+    "p_correct": 0.908,
+    "p_salient": 0.084
+   },
+   "32": {
+    "top": "located",
+    "p_correct": 0.122,
+    "p_salient": 0.008
+   },
+   "33": {
+    "top": "Canberra",
+    "p_correct": 0.935,
+    "p_salient": 0.005
+   }
+  }
+ },
+ "The capital of the United States is": {
+  "correct": "Washington",
+  "salient": "New York",
+  "crossover_layer": 22,
+  "by_layer": {
+   "0": {
+    "top": "\u5426",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "8": {
+    "top": "\u0441\u0432\u043e\u0435\u0433\u043e",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "12": {
+    "top": "supposed",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "16": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "20": {
+    "top": "the",
+    "p_correct": 0.012,
+    "p_salient": 0.001
+   },
+   "22": {
+    "top": "Washington",
+    "p_correct": 0.315,
+    "p_salient": 0.001
+   },
+   "24": {
+    "top": "Washington",
+    "p_correct": 0.995,
+    "p_salient": 0.0
+   },
+   "26": {
+    "top": "Washington",
+    "p_correct": 1.0,
+    "p_salient": 0.0
+   },
+   "28": {
+    "top": "Washington",
+    "p_correct": 0.999,
+    "p_salient": 0.0
+   },
+   "30": {
+    "top": "Washington",
+    "p_correct": 0.998,
+    "p_salient": 0.0
+   },
+   "32": {
+    "top": "Washington",
+    "p_correct": 0.868,
+    "p_salient": 0.0
+   },
+   "33": {
+    "top": "Washington",
+    "p_correct": 0.929,
+    "p_salient": 0.0
+   }
+  }
+ },
+ "The capital of Canada is": {
+  "correct": "Ottawa",
+  "salient": "Toronto",
+  "crossover_layer": 24,
+  "by_layer": {
+   "0": {
+    "top": "\u5426",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "8": {
+    "top": "\ubb3c\ub860",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "12": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "16": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "20": {
+    "top": "located",
+    "p_correct": 0.001,
+    "p_salient": 0.001
+   },
+   "22": {
+    "top": "what",
+    "p_correct": 0.004,
+    "p_salient": 0.006
+   },
+   "24": {
+    "top": "Ottawa",
+    "p_correct": 0.552,
+    "p_salient": 0.295
+   },
+   "26": {
+    "top": "Ottawa",
+    "p_correct": 0.938,
+    "p_salient": 0.019
+   },
+   "28": {
+    "top": "Ottawa",
+    "p_correct": 0.983,
+    "p_salient": 0.011
+   },
+   "30": {
+    "top": "Ottawa",
+    "p_correct": 0.88,
+    "p_salient": 0.105
+   },
+   "32": {
+    "top": "located",
+    "p_correct": 0.228,
+    "p_salient": 0.008
+   },
+   "33": {
+    "top": "Ottawa",
+    "p_correct": 0.873,
+    "p_salient": 0.006
+   }
+  }
+ },
+ "The capital of Turkey is": {
+  "correct": "Ankara",
+  "salient": "Istanbul",
+  "crossover_layer": 26,
+  "by_layer": {
+   "0": {
+    "top": "\u5426",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "8": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "12": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "16": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "20": {
+    "top": "located",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "22": {
+    "top": "located",
+    "p_correct": 0.0,
+    "p_salient": 0.001
+   },
+   "24": {
+    "top": "located",
+    "p_correct": 0.011,
+    "p_salient": 0.321
+   },
+   "26": {
+    "top": "Ankara",
+    "p_correct": 0.575,
+    "p_salient": 0.395
+   },
+   "28": {
+    "top": "Ankara",
+    "p_correct": 0.631,
+    "p_salient": 0.298
+   },
+   "30": {
+    "top": "Ankara",
+    "p_correct": 0.873,
+    "p_salient": 0.049
+   },
+   "32": {
+    "top": "located",
+    "p_correct": 0.097,
+    "p_salient": 0.001
+   },
+   "33": {
+    "top": "Ankara",
+    "p_correct": 0.801,
+    "p_salient": 0.007
+   }
+  }
+ },
+ "The capital of Brazil is": {
+  "correct": "Brasilia",
+  "salient": "Rio",
+  "crossover_layer": 26,
+  "by_layer": {
+   "0": {
+    "top": "\u5426",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "8": {
+    "top": "v\u00e0",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "12": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "16": {
+    "top": "cities",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "20": {
+    "top": "located",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "22": {
+    "top": "what",
+    "p_correct": 0.0,
+    "p_salient": 0.0
+   },
+   "24": {
+    "top": "located",
+    "p_correct": 0.009,
+    "p_salient": 0.001
+   },
+   "26": {
+    "top": "Brazil",
+    "p_correct": 0.104,
+    "p_salient": 0.001
+   },
+   "28": {
+    "top": "Bras\u00edlia",
+    "p_correct": 0.164,
+    "p_salient": 0.003
+   },
+   "30": {
+    "top": "Brasil",
+    "p_correct": 0.539,
+    "p_salient": 0.006
+   },
+   "32": {
+    "top": "located",
+    "p_correct": 0.108,
+    "p_salient": 0.001
+   },
+   "33": {
+    "top": "Brasil",
+    "p_correct": 0.264,
+    "p_salient": 0.003
+   }
+  }
+ }
+}

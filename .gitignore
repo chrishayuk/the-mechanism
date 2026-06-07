@@ -1,0 +1,5 @@
+# the shooting script stays private — not for the record
+SCRIPT.md
+
+# regenerable run logs (re-create with: python3 mechanism.py all)
+*.log

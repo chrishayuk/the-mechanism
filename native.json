@@ -1,0 +1,25 @@
+{
+ "L": 26,
+ "native": "3/3",
+ "retention": "6/6",
+ "facts": [
+  {
+   "e": "Zelandia",
+   "r": "capital",
+   "a": "Oslo",
+   "base_P": 3.686592754092999e-05
+  },
+  {
+   "e": "Qtaria",
+   "r": "currency",
+   "a": "Yen",
+   "base_P": 1.418744375314418e-07
+  },
+  {
+   "e": "Vornholt",
+   "r": "language",
+   "a": "Welsh",
+   "base_P": 2.7994968831990263e-07
+  }
+ ]
+}
