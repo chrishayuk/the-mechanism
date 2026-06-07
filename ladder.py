@@ -56,7 +56,7 @@ def main():
     except Exception:
         par_mlp = float("nan")
 
-    log("=== THE COMPUTE LADDER — pack 8 facts, ask a LINEAR reader (a look-up) four jobs ===")
+    log("THE COMPUTE LADDER — pack 8 facts, ask a LINEAR reader (a look-up) four jobs:")
     log(f"  (held-out accuracy; chance for the yes/no jobs = 0.50)")
     log(f"  READ      each fact back out          : {read_acc:.2f}   <- FREE: every fact is perfectly readable")
     log(f"  COUNT     how many are on             : {cnt_acc:.2f}   <- FREE: a sum is a linear aggregate")

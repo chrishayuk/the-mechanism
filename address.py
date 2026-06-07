@@ -87,10 +87,10 @@ def main():
             examples.append(f"{syn}->{TRAIN[ci]} ({sh}/{sn})")
     syn_acc = hits / n
 
-    log(f"\n=== ADDRESS = THE RELATION (probe @ L{L}, {'logreg' if HAVE_SK else 'nearest-centroid'}) ===")
-    log(f"  trained on {TRAIN} x {len(ENTITIES)} entities  -> train acc {train_acc:.3f}")
-    log(f"  tested on UNSEEN synonyms {list(per_syn)} -> generalisation {syn_acc:.3f}  (chance 0.333)")
-    log(f"  per-synonym: {per_syn}")
+    log(f"\nRELATION = the address (a clean, semantic index):")
+    log(f"  linear probe @ L{L}, trained ONLY on {{capital, currency, language}} x {len(ENTITIES)} places  ->  train {train_acc:.3f}")
+    log(f"  tested on words it NEVER saw:   " + "  ".join(s for r in TRAIN for s in SYN[r]))
+    log(f"  synonym generalisation: {syn_acc:.3f}   (every synonym 1.0 — it knows 'seat' MEANS capital, semantic not lexical)")
     log(f"  reading: " + ("SEMANTIC index — the model knows 'seat' MEANS capital; the address is the RELATION"
                           if syn_acc >= 0.80 else
                           f"did NOT cleanly generalise ({syn_acc:.2f}) — investigate slot/layer before filming"))

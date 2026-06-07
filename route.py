@@ -80,13 +80,10 @@ def main():
     cross_sd = {k: float(np.std([r[k] for r in cr_runs])) for k in ks}
     chance5 = 5 / N
 
-    log(f"\n=== ROUTE THE ENTITY by its own activation key @ L{L}  (mean of 5 routers; chance@5 = {chance5:.02f}) ===")
-    log(f"  held-out paraphrase ('X's capital city is')   : top1 {para[1]:.2f}  top5 {para[5]:.2f}  (+/-{para_sd[5]:.02f})")
-    log(f"  cross-relation (train capital, route currency): top1 {cross[1]:.2f}  top5 {cross[5]:.2f}  (+/-{cross_sd[5]:.02f})")
-    log(f"  -> top-1 weak (~{para[1]:.2f}: NOT pinpoint); top-5 strong (~{para[5]:.2f}: a candidate list).")
-    log(f"     cross-relation top5 {cross[5]:.2f} is FAR above chance ({chance5:.02f}) -> a GENUINE ENTITY key,")
-    log(f"     not answer-leak (different relation, different answer, still finds the place). ~ paraphrase.")
-    log(f"     mechanism: address the entity = generate top-k by activation, then rank / verify.")
+    log(f"\nroute the entity by its own activation key @ L{L}  ({N} real places; chance@5 = 5/{N} = {chance5:.02f}):")
+    log(f"  held-out paraphrase (\"X's capital city is\")             : top1 {para[1]:.2f}   top5 {para[5]:.2f}   (mean of 5 routers, +/-{para_sd[5]:.02f})")
+    log(f"  cross-relation (train 'capital of', route 'currency of'): top1 {cross[1]:.2f}   top5 {cross[5]:.2f}   (+/-{cross_sd[5]:.02f})")
+    log(f"  -> top-1 weak (NOT pinpoint); top-5 strong (a candidate list). address the entity = top-k + rank.")
 
     # concrete: ONE place's candidate list -- the entity resolves to a ranked SHORT-LIST, not a pinpoint
     lo0 = np.array(net0(mx.array(((Xpa - mu) / sd).astype(np.float32))))
@@ -94,8 +91,8 @@ def main():
     pick = next((i for i in range(N) if 2 <= ranks[i] <= 5), int(np.argmin(ranks)))
     top5 = [ents[j] for j in np.argsort(-lo0[pick])[:5]]
     log(f"\n  SEE IT — read the entity from \"{ents[pick]}'s capital city is\":")
-    log(f"    router's top-5 guesses: {top5}")
-    log(f"    true '{ents[pick]}' is in there at rank {ranks[pick]} -> a short-list you then verify, not one clean guess")
+    log(f"    router's top-5 guesses:  [{', '.join(top5)}]")
+    log(f"    true '{ents[pick]}' sits at rank {ranks[pick]}  -> a ranked SHORT-LIST you then verify, not one clean guess")
     json.dump(dict(L=L, N=N, seeds=list(SEEDS), chance5=chance5,
                    example=dict(place=ents[pick], top5=top5, true_rank=ranks[pick]),
                    paraphrase=para, paraphrase_sd=para_sd, cross_relation=cross, cross_relation_sd=cross_sd,

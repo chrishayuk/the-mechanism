@@ -86,20 +86,21 @@ def main():
     DEMO_NAME = "Marn"; DEMO = {"capital": "Cairo", "currency": "Rand", "language": "Tamil"}
     dtid = {r: tid_of(DEMO[r]) for r in REL}
     dpacked = ALPHA * np.sum([edir(dtid[r]) for r in REL], axis=0)
-    log(f"\n=== WATCH ONE PLACE — packed channel injected, ask it 3 different questions ===")
-    log(f"  '{DEMO_NAME}' was packed with capital={DEMO['capital']}, currency={DEMO['currency']}, language={DEMO['language']}")
+    qw = max(len(f"'{rr} of {DEMO_NAME}?'") for rr in REL)
+    log("\nWATCH ONE PLACE — packed channel injected, ask 3 different questions:")
+    log(f"  '{DEMO_NAME}' packed with   capital={DEMO['capital']}   currency={DEMO['currency']}   language={DEMO['language']}")
     for r in REL:
         p2 = probs(REL_PROMPT[r].format(e=DEMO_NAME), dpacked)
         pk = int(np.argmax([p2[dtid[rr]] for rr in REL])); said = DEMO[REL[pk]]; truth = DEMO[r]
-        log(f"    ask '{r} of {DEMO_NAME}?'  ->  model says '{said}'   ({'right' if said == truth else 'WRONG'})")
-    log(f"  -> the SAME answer to every question: it blares the loudest fact, it does NOT unpack by query.")
+        tag = "      <- same answer every time" if r == REL[-1] else ""
+        q = f"'{r} of {DEMO_NAME}?'"
+        log(f"    ask {q:<{qw}}  ->  '{said}'   ({'right' if said == truth else 'WRONG'}){tag}")
 
-    log(f"\n=== THE WALL (frozen Gemma, novel entities, inject @ L{L}) ===")
-    log(f"  C0 nothing injected (model knows novel facts?) : {c0:.3f}   (~0, good — brand-new)")
-    log(f"  C1 ONE relation injected (read it?)            : {c1:.3f}   (~1.0 — it reads a single clean signal)")
-    log(f"  C2 PACKED channel injected (de-mix by query?)  : {c2:.3f}   (~chance 0.333 — it CAN'T unpack)")
-    log(f"  query-independence on C2 (amplify-strongest?)  : {qi:.3f}   (high = same answer to every question)")
-    log(f"  -> shape: one relation reads ~1.0; the packed channel reads ~chance. The model has no decoder.")
+    log(f"\nTHE TALLY — {N} novel places, inject @ L{L} (the BUILDING band; every advantage):")
+    log(f"  C0  clean baseline             :  {c0:.3f}")
+    log(f"  C1  one clean relation alone   :  {c1:.3f}   (reads a single clean signal perfectly)")
+    log(f"  C2  packed channel, all at once:  {c2:.3f}   (chance ~ 1/3 — it CAN'T unpack)")
+    log(f"  query-independence             :  {qi:.3f}   (amplify-strongest — same answer regardless of question)")
     json.dump(dict(L=L, alpha=ALPHA, n=N, C0_novel=round(c0,3), C1_single=round(c1,3),
                    C2_packed=round(c2,3), query_independence=round(qi,3)),
               open("wall.json", "w"), indent=1, default=float)

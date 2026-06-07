@@ -81,7 +81,7 @@ def main():
 
     base = {(e, r, a): (P(PROMPT[r].format(e=e), tid(a)) if tid(a) else None) for (e, r, a) in FACTS}
     base_retain = {p: amax(p) for p, _ in RETAIN}
-    log("\n=== BEFORE (clean model, novel facts ~0) ===")
+    log("\nBEFORE — clean model, these places are novel (P ~ 0):")
     for (e, r, a), p in base.items(): log(f"  P({a}|{e}) = {p:.4f}")
 
     # decoys: other prompts whose addresses we DON'T want our neurons to fire for
@@ -93,7 +93,7 @@ def main():
     addr = {f: capture_key(PROMPT[f[1]].format(e=f[0])) for f in FACTS}
     decoy_addr = [capture_key(p) for p in DECOYS]
 
-    log("\n=== WRITE each fact as one key->value slot (the model's OWN address) ===")
+    log("\nWRITE each fact as ONE key->value slot (at the model's OWN computed address):")
     for i, (e, r, a) in enumerate(FACTS):
         slot = I - 1 - i
         others = decoy_addr + [addr[f] for j, f in enumerate(FACTS) if j != i]
@@ -104,13 +104,16 @@ def main():
     mlp.up_proj.weight = mx.array(U.astype(np.float32)).astype(mlp.up_proj.weight.dtype)
     mlp.down_proj.weight = mx.array(D.astype(np.float32)).astype(mlp.down_proj.weight.dtype)
 
-    log("\n=== NATIVE READ (no injection, no training — the model's OWN forward pass) ===")
+    log("\nhand-written relation -> L26 FFN slot at the model's computed address:")
+    aw = max(len(a) for _, _, a in FACTS); ew = max(len(e) for e, _, _ in FACTS)
     hit = 0
-    for (e, r, a) in FACTS:
+    for i, (e, r, a) in enumerate(FACTS):
         tt = tid(a); p = P(PROMPT[r].format(e=e), tt); am = amax(PROMPT[r].format(e=e)); ok = (am == tt); hit += ok
-        log(f"  P({a}|{e})  {base[(e,r,a)]:.4f} -> {p:.4f}   argmax='{tok.decode([am]).strip()[:10]}'  {'OK' if ok else 'x'}")
+        ann = "     (a made-up place, a made-up capital, read NATIVELY)" if i == 0 else ""
+        log(f"  P({a:<{aw}} | {e:<{ew}})   {base[(e,r,a)]:.0f} -> {p:.4f}{ann}")
     agree = sum(amax(p) == base_retain[p] for p, _ in RETAIN)
-    log(f"\n  native read: {hit}/{len(FACTS)}   retention (argmax vs clean): {agree}/{len(RETAIN)}")
+    log(f"  native read through the model's OWN forward pass:  {hit}/{len(FACTS)}")
+    log(f"  retention (argmax vs clean):  {agree}/{len(RETAIN)}")
     log(f"  -> the model reads OUR hand-written store, natively. (caps ~a dozen/relation — the entity-collision limit.)")
     json.dump(dict(L=L, native=f"{hit}/{len(FACTS)}", retention=f"{agree}/{len(RETAIN)}",
                    facts=[{"e": e, "r": r, "a": a, "base_P": base[(e, r, a)]} for (e, r, a) in FACTS]),

@@ -78,12 +78,11 @@ def main():
     ent_top5 = topk(entity, R[te], places[te], 5)
     # =====================================================================================================
 
-    log(f"\n=== ONE RESIDUAL VECTOR @ L{L_READ} — THREE FACTS READ OUT (held-out {len(te)}/{len(R)}) ===")
+    log(f"\nONE RESIDUAL VECTOR @ L{L_READ} — THREE FACTS READ OUT (linear probes, held-out):")
     log(f"  (1) VALUE    — the model's own unembed reads the answer off the residual : {value:.2f}")
-    log(f"  (2) RELATION — a 3-way linear probe (capital / currency / language)      : {rel_acc:.2f}   (chance 0.33)")
-    log(f"  (3) ENTITY   — a linear probe: which of {len(COUNTRIES)} places           : top5 {ent_top5:.2f}   (chance {1/len(COUNTRIES):.02f})")
-    log(f"\n  three DIFFERENT facts, ONE vector, all LINEARLY readable -> the residual is POLYSEMANTIC (packed).")
-    log(f"  the model superposes many facts per direction. It PACKS to store, and ADDRESSES to read (trace.py).")
+    log(f"  (2) RELATION — a 3-way probe (capital / currency / language)             : {rel_acc:.2f}   (chance 0.33)")
+    log(f"  (3) ENTITY   — a router: which of {len(COUNTRIES)} places is this                      : top5 {ent_top5:.2f}   (chance {1/len(COUNTRIES):.02f})")
+    log(f"  -> three DIFFERENT facts, ONE vector, all LINEARLY readable = POLYSEMANTIC (packed)")
     json.dump(dict(L=L_READ, N=len(R), held=len(te), value_readable=round(value, 3),
                    relation_acc=round(rel_acc, 3), entity_top5=round(ent_top5, 3)),
               open("decode.json", "w"), indent=1, default=float)

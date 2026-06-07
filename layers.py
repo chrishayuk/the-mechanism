@@ -17,12 +17,13 @@ from chuk_lazarus.models_v2.loader import load_model, ModelDType
 
 # (prompt, correct capital, salient-but-wrong city)
 CASES = [
-    ("The capital of Australia is", "Canberra", "Sydney"),
-    ("The capital of the United States is", "Washington", "New York"),
-    ("The capital of Canada is", "Ottawa", "Toronto"),
-    ("The capital of Turkey is", "Ankara", "Istanbul"),
-    ("The capital of Brazil is", "Brasilia", "Rio"),
+    ("The capital of Australia is", "Canberra", "Sydney", "Australia"),
+    ("The capital of the United States is", "Washington", "New York", "USA"),
+    ("The capital of Canada is", "Ottawa", "Toronto", "Canada"),
+    ("The capital of Turkey is", "Ankara", "Istanbul", "Turkey"),
+    ("The capital of Brazil is", "Brasilia", "Rio", "Brazil"),
 ]
+FOCUS = [20, 24, 26, 28]                # the layers the film shows for the worked example (Australia)
 STATE = {"upto": None}
 def log(*a): print(*a, flush=True)
 
@@ -51,23 +52,30 @@ def main():
         return int(np.argmax(ll)), p
 
     LAYERS = [0, 8, 12, 16, 20, 22, 24, 26, 28, 30, 32, nlayers - 1]
-    out = {}
-    for (prompt, correct, salient) in CASES:
+    out = {}; cross = {}
+    for (prompt, correct, salient, label) in CASES:                 # full sweep — computed for the json + crossover
         tc, ts = tid_of(correct), tid_of(salient)
-        log(f"\n=== {prompt!r}   (correct {correct!r}, salient {salient!r}) ===")
-        log(f"{'L':>4} | {'top-1 token':>14} | P({correct[:8]}) | P({salient[:8]}) | crossover?")
         rows = {}; crossed = None
         for L in LAYERS:
             top, p = lens(prompt, L)
             pc = float(p[tc]) if tc else 0.0; pss = float(p[ts]) if ts else 0.0
-            mark = ""
-            if crossed is None and pc > pss and pc > 0.02:
-                crossed = L; mark = "  <- CORRECT overtakes salient here"
+            if crossed is None and pc > pss and pc > 0.02: crossed = L
             rows[L] = dict(top=tok.decode([top]).strip()[:14], p_correct=round(pc, 3), p_salient=round(pss, 3))
-            log(f"{L:>4} | {rows[L]['top']:>14} | {pc:>9.3f} | {pss:>9.3f} |{mark}")
         out[prompt] = dict(correct=correct, salient=salient, crossover_layer=crossed, by_layer=rows)
-        log(f"  -> {correct} overtakes {salient} at layer {crossed}" if crossed is not None
-            else f"  -> {correct} never cleanly overtakes {salient} in the swept layers")
+        cross[label] = (correct, crossed)
+
+    # show the worked example (Australia) at the layers the film reads, then assert the same shape for the rest
+    prompt, correct, salient, _ = CASES[0]; r0 = out[prompt]["by_layer"]; resolved = False
+    log(f"\n{prompt!r}   (correct: {correct} | famous-but-wrong: {salient})")
+    for L in FOCUS:
+        pc = r0[L]["p_correct"]; pss = r0[L]["p_salient"]; tok_str = f"'{r0[L]['top']}'"
+        if pc < 0.02 and pss < 0.02:   ann = "     <- nothing resolved yet"
+        elif pss >= pc:                ann = "     <- FUZZY: the famous city leads"
+        elif not resolved:             ann = "     <- RESOLVES here"; resolved = True
+        else:                          ann = ""
+        log(f"  L {L:>2} :  top = {tok_str:<11} P({correct}) {pc:.2f}   P({salient}) {pss:.2f}{ann}")
+    same = " · ".join(f"{lbl} {c} @{xl}" for lbl, (c, xl) in list(cross.items())[1:])
+    log(f"  (same shape: {same})")
     json.dump(out, open("layers.json", "w"), indent=1, default=float)
     log("\nwrote layers.json")
 

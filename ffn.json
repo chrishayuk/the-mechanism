@@ -1,0 +1,50 @@
+{
+ "d": 24,
+ "n_facts": 6,
+ "width": 24,
+ "recovered": "6/6",
+ "reads": [
+  {
+   "address": "capital  of Atlantis",
+   "neuron": 0,
+   "got": "Paris",
+   "want": "Paris",
+   "ok": true
+  },
+  {
+   "address": "currency of Atlantis",
+   "neuron": 1,
+   "got": "Euro",
+   "want": "Euro",
+   "ok": true
+  },
+  {
+   "address": "language of Atlantis",
+   "neuron": 2,
+   "got": "Latin",
+   "want": "Latin",
+   "ok": true
+  },
+  {
+   "address": "capital  of Zerivia",
+   "neuron": 3,
+   "got": "Cairo",
+   "want": "Cairo",
+   "ok": true
+  },
+  {
+   "address": "currency of Zerivia",
+   "neuron": 4,
+   "got": "Rand",
+   "want": "Rand",
+   "ok": true
+  },
+  {
+   "address": "language of Zerivia",
+   "neuron": 5,
+   "got": "Tamil",
+   "want": "Tamil",
+   "ok": true
+  }
+ ]
+}

@@ -45,34 +45,36 @@ def decode(code, atoms, threshold=0.30):
 REL = ["capital", "currency", "language", "river", "mountain", "leader", "anthem", "motto"]
 
 
+def fmt_row(v):
+    """A vector as fixed 2-decimal, aligned columns: [ 0.56  0.35 -0.20 ...] (screen-ready, not numpy's -0.2)."""
+    return "[" + " ".join(f"{x:5.2f}" for x in v) + "]"
+
+
 def show_construction():
     """The legible demo: 8 relation-directions in 6 slots; pack 3, read them back with decode()."""
-    np.set_printoptions(precision=2, suppress=True, sign=" ")
     rng = np.random.default_rng(27)
     atoms = rng.standard_normal((8, 6)); atoms /= np.linalg.norm(atoms, axis=1, keepdims=True)  # 8 unit dirs in 6-dim
     have = [0, 1, 2]                              # this place ('Atlantis') HAS capital, currency, language
 
-    print("=== HOW IT'S PACKED — 8 relation-types, only 6 slots ===")
-    print("Each relation is ONE hand-placed direction (6 numbers). 'Atlantis' HAS three of them:")
-    for j in have:
-        print(f"    {REL[j]:9s} = {atoms[j]}")
+    print("HOW IT'S PACKED — 8 relation-types, only 6 slots:")
+    for n, j in enumerate(have):
+        tag = "   <- each relation = one hand-placed direction" if n == 0 else ""
+        print(f"  {REL[j]:9s} = {fmt_row(atoms[j])}{tag}")
     code = pack([atoms[j] for j in have])
-    print("\nPACK = add the three onto ONE channel:")
-    print(f"    code = capital + currency + language = {code}   <- 3 facts, 1 vector (8 relations, 6 slots: they OVERLAP)")
+    print("PACK = add the three onto ONE channel:")
+    print(f"  code = capital + currency + language = {fmt_row(code)}   <- 3 facts, 1 vector")
 
-    print("\nREAD BACK = decode(): match, lock the winner, PEEL it, repeat:")
+    print("READ BACK = decode(): match, lock the winner, PEEL it, repeat:")
     found, trace = decode(code, atoms)
     peeled = []
     for step, (match, w) in enumerate(trace, 1):
-        cells = "  ".join(f"{REL[k]} " + ("(peeled)" if k in peeled else f"{match[k]:+.2f}") for k in have + [3])
         if match[w] < 0.30:
-            print(f"    step {step}: {cells}  ...  nothing >= 0.30 left -> STOP")
-        else:
-            print(f"    step {step}: {cells}  ...  LOCK '{REL[w]}', peel it off"); peeled.append(w)
+            break                                # stop at the noise floor (the 5 absent relations stay quiet)
+        cells = "   ".join((f"{REL[k]}(peeled)" if k in peeled else f"{REL[k]} {match[k]:+.2f}") for k in have + [3])
+        print(f"  step {step}:  {cells}   -> LOCK '{REL[w]}', peel"); peeled.append(w)
     ok = found == set(have)
-    print(f"    recovered {{{', '.join(REL[j] for j in sorted(found))}}} {'EXACTLY' if ok else '(MISMATCH)'}"
-          f" — the present relations light up; peeling resolves them; the absent ones stay quiet.\n")
-    np.set_printoptions()
+    print(f"  recovered {{{', '.join(REL[j] for j in sorted(found))}}} {'EXACTLY' if ok else '(MISMATCH)'}"
+          f"   (the 5 absent relations stay quiet)")
 
 
 def harmonic_atoms(K, d, seed):
@@ -85,8 +87,9 @@ def harmonic_atoms(K, d, seed):
 
 def main():
     show_construction()
-    print("=== AND IT SCALES — a real world atlas (no model, no training) ===")
+    print("AND IT SCALES — the real world atlas (no model, no training):")
     K, ACTIVE, N = 1241, 6, 400
+    print(f"  {N} places x {K} relation-types (capital, currency, language, + ~1200 more), packed by hand")
     rng = np.random.default_rng(0)
     places = [sorted(rng.choice(K, size=ACTIVE, replace=False)) for _ in range(N)]
     out = {}
@@ -96,9 +99,10 @@ def main():
         coh = float(np.max(np.abs(atoms @ atoms.T - np.eye(K))))     # coherence = how hard the directions press on each other
         exact = sum(decode(pack([atoms[i] for i in p]), atoms)[0] == set(p) for p in places)
         out[f"ratio_{ratio}"] = dict(d=d, coherence=round(coh, 3), exact_set=round(exact / N, 3))
-        print(f"  ratio {ratio:>2} (K={K} -> {d} slots, coherence {coh:.2f}): exact-set recovery {exact/N:.3f}")
-    print(f"\n  {N} places x {K} relation-types, packed by hand; the SAME decode() reads each back exactly —")
-    print(f"  even crammed ~13x tighter than should fit. I built both halves: pack() and decode().")
+        if ratio == 1:                                               # the trivial identity case — computed for the json, not shown
+            continue
+        tag = "   <- still 90%, even as they press hard" if ratio == 19 else ""
+        print(f"  ratio {ratio:>2} ({K} -> {d:>3} slots, coherence {coh:.2f}): exact-set {exact/N:.3f}{tag}")
     json.dump(dict(K=K, active=ACTIVE, n_entities=N, results=out), open("pack.json", "w"), indent=1)
     print("wrote pack.json")
 

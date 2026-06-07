@@ -12,6 +12,7 @@ address (a key), row i of W_out is the answer at that address (a value). Feed th
 neuron lights up, and it writes its value. That's exactly what trace.py shows the real model doing.
 Self-contained, CPU/numpy, no training.
 """
+import json
 import numpy as np
 
 d = 24                                          # model width (tiny, for legibility)
@@ -49,18 +50,23 @@ def main():
         print(f"     neuron {i}:  detect [{a}]  ->  write '{b}'")
 
     print("\n=== READ IT BY ADDRESSING — feed an address, ONE matmul, the value fires ===")
-    correct = 0
+    correct = 0; reads = []
     for a, b in FACTS:
         h, out = ffn(key[a])
         fired = int(np.argmax(h)); got = read_word(out)
         correct += (got == b)
+        reads.append(dict(address=a.strip(), neuron=fired, got=got, want=b, ok=bool(got == b)))
         bar = "".join("#" if h[j] > 0.5 else ("." if h[j] > 1e-6 else " ") for j in range(len(FACTS)))
-        print(f"  ask [{a}]  ->  neurons [{bar}] fire (#{fired})  ->  out reads '{got}'   {'OK' if got==b else 'X'}")
+        print(f"  ask [{a}]  ->  neurons [{bar}] fire (#{fired})  ->  out reads {f"'{got}'":<7}  {'OK' if got==b else 'X'}")
     print(f"\n  recovered {correct}/{len(FACTS)} by a single key->value lookup — NO iteration, NO de-mixing.")
+    json.dump(dict(d=d, n_facts=len(FACTS), width=W_in.shape[1],
+                   recovered=f"{correct}/{len(FACTS)}", reads=reads),
+              open("ffn.json", "w"), indent=1)
     print("  to add a fact: add a neuron (a row). facts don't interfere — capacity is # neurons, not de-mix budget.")
     print("\n  pack.py packs by ADDING onto one channel (needs an OMP de-mixer to read).")
     print("  THIS packs by ADDRESSING (key->value rows; read = one matmul) — and it's how the model does it")
     print("  (Geva et al.: FFN = key->value memory). trace.py shows the real model writing+reading exactly this way.")
+    print("\nwrote ffn.json")
 
 
 if __name__ == "__main__":

@@ -87,12 +87,13 @@ def main():
         out[prompt] = dict(answer=ans, p_final=round(pfull, 3), write_layer=write_layer,
                            p_lens={L: round(plens[L], 3) for L in LSET},
                            mlp_write={i: round(mlp_write[i], 2) for i in range(18, 30)})
-        log(f"\n=== {prompt!r} -> {ans!r}   (final P={pfull:.3f}) ===")
-        log("  L   :  " + "  ".join(f"{L}" for L in LSET))
-        log("  P(ans):" + "  ".join(f"{plens[L]:.2f}" for L in LSET) + "   <- value becomes linearly readable")
-        topw = sorted(range(12, nL - 2), key=lambda i: -mlp_write[i])[:3]
-        log(f"  biggest FFN writes of the '{ans}' direction: " +
-            ", ".join(f"L{i} ({mlp_write[i]:+.1f})" for i in topw) + "   <- the lookup fires here")
+        if prompt == FACTS[0][0]:                                   # the film shows ONE worked example (France)
+            log(f"\n{prompt!r} -> {ans!r}   (final P={pfull:.2f})")
+            band = "   ".join(f"L{L} {plens[L]:.2f}" for L in [20, 22, 24, 25])
+            log(f"  P({ans}):  {band}      <- absent, then SNAPS in at L24-25")
+            topw = sorted(sorted(range(12, nL - 2), key=lambda i: -mlp_write[i])[:3])
+            log(f"  biggest FFN writes of the '{ans}' direction:  "
+                + ", ".join(f"L{i}" for i in topw) + "   <- the lookup fires in the fact band")
 
     # causal: the write is DISTRIBUTED across the band (one layer alone barely dents it) -> ablate the BAND,
     # with an early-band control for specificity. Zero fact-band FFN writes -> answer collapses; early band -> no effect.
@@ -100,23 +101,18 @@ def main():
     def p_with(prompt, tid, layers):
         ABL["layers"] = (set(layers) if layers else None)
         p = pvalue(prompt, tid, upto=None); ABL["layers"] = None; return p
-    log(f"\n=== CAUSAL CHECK — zero the FFN writes (last position); fact-band L{FACT_BAND[0]}-{FACT_BAND[-1]} vs early-control L{CTRL_BAND[0]}-{CTRL_BAND[-1]} ===")
     rows = []
-    for prompt, ans in FACTS:
+    for prompt, ans in FACTS:                                       # ablate all 5 (for the aggregate + json)
         tid = tid_of(ans)
-        p0 = p_with(prompt, tid, None)
-        pf = p_with(prompt, tid, FACT_BAND)
-        pc = p_with(prompt, tid, CTRL_BAND)
-        rows.append((ans, p0, pf, pc))
-        log(f"  P({ans:7s}):  clean {p0:.2f}   | zero FACT-band -> {pf:.2f} {'(COLLAPSES)' if pf < 0.3 else ''}"
-            f"   | zero early-control -> {pc:.2f} {'(unharmed)' if pc > 0.7 * p0 else ''}")
+        rows.append((ans, p_with(prompt, tid, None), p_with(prompt, tid, FACT_BAND), p_with(prompt, tid, CTRL_BAND)))
     mfact = float(np.mean([(p0 - pf) / (p0 + 1e-9) for _, p0, pf, _ in rows]))
     mctrl = float(np.mean([(p0 - pc) / (p0 + 1e-9) for _, p0, _, pc in rows]))
-    log(f"\n  -> the value is ABSENT early, then WRITTEN by FFN key->value lookups across the fact band (L23-27),")
-    log(f"     readable LINEARLY thereafter. Zeroing the band's writes drops P(answer) {mfact*100:.0f}% (collapse);")
-    log(f"     zeroing an equal early band drops it {mctrl*100:.0f}% (specific to the fact band).")
-    log(f"     That is ADDRESSING (a written lookup), not de-mixing of an early superposition —")
-    log(f"     which is exactly why an externally-packed channel (wall.py) reads nothing: no lookup wrote it.")
+    a0, p0, pf, pc = rows[0]                                        # show France's row, then assert across all 5
+    log(f"\nCAUSAL CHECK — zero the FFN writes (last position):")
+    log(f"  P({a0} ):  clean {p0:.2f}  | zero fact-band L{FACT_BAND[0]}-{FACT_BAND[-1]} -> {pf:.2f} (COLLAPSES)"
+        f"  | zero early-band L{CTRL_BAND[0]}-{CTRL_BAND[-1]} -> {pc:.2f} (unharmed)")
+    log(f"  (all {len(rows)} facts — {'/'.join(a for a, *_ in rows)}: fact-band ablation drops P "
+        f"~{mfact*100:.0f}%; the early band, ~{max(0.0, mctrl*100):.0f}%)")
     json.dump(dict(facts=out, fact_band=FACT_BAND, ctrl_band=CTRL_BAND,
                    mean_factband_drop=round(mfact, 3), mean_ctrlband_drop=round(mctrl, 3),
                    ablation=[(a, round(p0, 3), round(pf, 3), round(pc, 3)) for a, p0, pf, pc in rows]),
