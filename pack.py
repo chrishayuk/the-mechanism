@@ -18,9 +18,9 @@ import numpy as np
 
 # ======================= THE WHOLE MECHANISM — two functions, show these =======================
 
-def pack(directions):
+def pack(dirs):
     """Storage is addition: lay the chosen directions on top of each other in ONE vector."""
-    return sum(directions)
+    return sum(dirs)
 
 
 def decode(code, atoms, threshold=0.30):

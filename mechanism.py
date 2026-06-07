@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-mechanism — one entry point for the four captures of the mechanism film. Self-contained in
-videos/the-mechanism/ (no dependency on fleet experiment dirs).
+mechanism — one entry point for the ten captures of the mechanism film. Self-contained in
+this folder (no dependency on fleet experiment dirs).
 
   python3 mechanism.py pack       Part 1   — pack by SUPERPOSITION (one channel) + manual OMP decoder (CPU)
   python3 mechanism.py wall       Part 2   — the model can't read the packed channel = chance (Gemma)
