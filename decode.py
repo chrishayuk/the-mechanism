@@ -2,21 +2,22 @@
 """
 decode — one residual vector is POLYSEMANTIC: three linear decoders pull three different facts out of it.
 
-A "linear decoder" is the simplest reader there is — fit a straight line (a linear map) from a vector to
-a label. We aim three of them at the SAME L26 residual (the model's state at the answer position):
+A "linear decoder" is the simplest reader there is — a straight-line map from a vector to a label. We aim
+three of them at the SAME L26 residual (the model's state at the answer position):
 
-    VALUE    — the model's OWN unembedding (already a linear map) reads the answer token off the residual
-    RELATION — a linear probe we train:  capital / currency / language
-    ENTITY   — a linear probe we train:  which place
+    value     = the model's OWN unembedding, read at L26 (the logit-lens)  -> the answer word
+    relation  = LogisticRegression().fit(R, rels)                          -> capital / currency / language
+    entity    = LogisticRegression().fit(R, places)                        -> which place
 
-All three succeed → that one vector holds many facts at once = superposition / packed. (E17: packing
-doesn't HIDE facts; they stay linearly readable.) So the model PACKS to store — and ADDRESSES to read
+All three succeed -> that one vector holds many facts at once = superposition / packed. (E17: packing
+doesn't HIDE facts; they stay linearly readable.) So the model PACKS to store -- and ADDRESSES to read
 (trace.py). What it never does is iteratively de-mix a packed channel by query (wall.py).
 Ground truth = the model's own single-token answers. Self-contained, Gemma-3-4b via MLX.
 """
 import sys, json
 sys.path.insert(0, "/Users/christopherhay/chris-source/chuk-mlx")
 import numpy as np, mlx.core as mx
+from sklearn.linear_model import LogisticRegression
 from chuk_lazarus.models_v2.loader import load_model, ModelDType
 
 L_READ = 26
@@ -30,12 +31,9 @@ COUNTRIES = ["France","Germany","Italy","Spain","Portugal","Greece","Austria","B
 def log(*a): print(*a, flush=True)
 
 
-def linear_probe(Xtr, ytr, Xte, yte, ks=(1,)):
-    """The simplest reader: fit a linear map vector->label, report held-out top-k accuracy."""
-    from sklearn.linear_model import LogisticRegression
-    clf = LogisticRegression(max_iter=2000).fit(Xtr, ytr)
-    order = np.argsort(-clf.predict_proba(Xte), axis=1); cls = clf.classes_
-    return {k: float(np.mean([yte[i] in cls[order[i, :k]] for i in range(len(yte))])) for k in ks}
+def topk(probe, X, y, k):                                          # held-out top-k accuracy of a fitted probe
+    order = np.argsort(-probe.predict_proba(X), axis=1)
+    return float(np.mean([y[i] in probe.classes_[order[i, :k]] for i in range(len(y))]))
 
 
 def main():
@@ -45,49 +43,49 @@ def main():
     nL = len(model.model.layers); lidx = {id(model.model.layers[i]): i for i in range(nL)}
     CAP = {}; STATE = {"upto": None}
     blk = type(model.model.layers[0]); orig = blk.__call__
-    def patched(self, x, mask=None, cache=None):                  # capture the L26 residual; optionally read it out early
+    def patched(self, x, mask=None, cache=None):
         res = orig(self, x, mask=mask, cache=cache); i = lidx[id(self)]
         if i == L_READ: CAP["res"] = np.array(res.hidden_states[0, -1, :].astype(mx.float32))
-        if STATE["upto"] is not None and i > STATE["upto"]:
+        if STATE["upto"] is not None and i > STATE["upto"]:        # cut the stack at L26 to read it out early
             return type(res)(hidden_states=x, cache=res.cache)
         return res
     blk.__call__ = patched
-    def answer_and_residual(prompt):
-        STATE["upto"] = None
-        ll = np.array(model(mx.array([tok.encode(prompt)])).logits[0, -1].astype(mx.float32))
-        return int(np.argmax(ll)), CAP["res"].copy()
-    def value_readout(prompt):                                    # the model's UNEMBED applied AT L26 (a linear readout)
-        STATE["upto"] = L_READ
-        ll = np.array(model(mx.array([tok.encode(prompt)])).logits[0, -1].astype(mx.float32))
-        STATE["upto"] = None; return int(np.argmax(ll))
 
-    # capture: one L26 residual per (place, relation), the model's answer, and the labels
+    def run(prompt, upto=None):                                    # one forward; upto=L26 -> the logit-lens read at L26
+        STATE["upto"] = upto
+        ll = np.array(model(mx.array([tok.encode(prompt)])).logits[0, -1].astype(mx.float32))
+        STATE["upto"] = None; return int(np.argmax(ll)), CAP["res"].copy()
+
+    # capture: one L26 residual per (place, relation), with the relation + place labels
     log(f"capturing L{L_READ} residuals for {len(COUNTRIES)} places x {len(REL)} relations ...")
-    rel_names = list(REL); X, y_rel, y_ent, y_val = [], [], [], []
+    rel_names = list(REL); res, rels, places = [], [], []
     for ei, e in enumerate(COUNTRIES):
         for ri, r in enumerate(rel_names):
-            ans, res = answer_and_residual(REL[r].format(e=e))
-            X.append(res); y_rel.append(ri); y_ent.append(ei); y_val.append(ans)
-    X = np.array(X); y_rel = np.array(y_rel); y_ent = np.array(y_ent)
-    N = len(X); rng = np.random.default_rng(0); perm = rng.permutation(N); ntr = int(0.7 * N)
+            res.append(run(REL[r].format(e=e))[1]); rels.append(ri); places.append(ei)
+    res = np.array(res); rels = np.array(rels); places = np.array(places)
+    R = (res - res.mean(0)) / (res.std(0) + 1e-6)                  # standardise the residuals
+    rng = np.random.default_rng(0); perm = rng.permutation(len(R)); ntr = int(0.7 * len(R))
     tr, te = perm[:ntr], perm[ntr:]
-    mu = X[tr].mean(0); sd = X[tr].std(0) + 1e-6; Z = (X - mu) / sd
 
-    # DECODER 1 — VALUE: the model's own unembed reads the answer off the L26 residual
-    sample = [(e, r) for e in COUNTRIES[:20] for r in rel_names]
-    value_acc = np.mean([value_readout(REL[r].format(e=e)) == answer_and_residual(REL[r].format(e=e))[0] for e, r in sample])
-    # DECODER 2 — RELATION, DECODER 3 — ENTITY: linear probes on the SAME residuals, held-out
-    rel = linear_probe(Z[tr], y_rel[tr], Z[te], y_rel[te])
-    ent = linear_probe(Z[tr], y_ent[tr], Z[te], y_ent[te], ks=(1, 5))
+    # ===================== THREE LINEAR DECODERS, all aimed at the SAME L26 residual =====================
+    # 1) VALUE    — the model's OWN unembedding, read at L26 (the logit-lens): does it already say the answer?
+    sample = [REL[r].format(e=e) for e in COUNTRIES[:20] for r in rel_names]
+    value = float(np.mean([run(p, upto=L_READ)[0] == run(p)[0] for p in sample]))
+    # 2) RELATION — a linear probe we fit on the residuals; 3) ENTITY — same, with top-k
+    relation = LogisticRegression(max_iter=2000).fit(R[tr], rels[tr])
+    entity   = LogisticRegression(max_iter=2000).fit(R[tr], places[tr])
+    rel_acc  = float(np.mean(relation.predict(R[te]) == rels[te]))
+    ent_top5 = topk(entity, R[te], places[te], 5)
+    # =====================================================================================================
 
-    log(f"\n=== ONE RESIDUAL VECTOR @ L{L_READ} — THREE FACTS READ OUT (held-out {len(te)}/{N}) ===")
-    log(f"  (1) VALUE    — the model's own unembed reads the answer off the residual : {value_acc:.2f}")
-    log(f"  (2) RELATION — a 3-way linear probe (capital / currency / language)      : {rel[1]:.2f}   (chance 0.33)")
-    log(f"  (3) ENTITY   — a linear probe: which of {len(COUNTRIES)} places           : top5 {ent[5]:.2f}   (chance {1/len(COUNTRIES):.02f})")
+    log(f"\n=== ONE RESIDUAL VECTOR @ L{L_READ} — THREE FACTS READ OUT (held-out {len(te)}/{len(R)}) ===")
+    log(f"  (1) VALUE    — the model's own unembed reads the answer off the residual : {value:.2f}")
+    log(f"  (2) RELATION — a 3-way linear probe (capital / currency / language)      : {rel_acc:.2f}   (chance 0.33)")
+    log(f"  (3) ENTITY   — a linear probe: which of {len(COUNTRIES)} places           : top5 {ent_top5:.2f}   (chance {1/len(COUNTRIES):.02f})")
     log(f"\n  three DIFFERENT facts, ONE vector, all LINEARLY readable -> the residual is POLYSEMANTIC (packed).")
     log(f"  the model superposes many facts per direction. It PACKS to store, and ADDRESSES to read (trace.py).")
-    json.dump(dict(L=L_READ, N=N, held=len(te), value_readable=round(float(value_acc), 3),
-                   relation_acc=round(rel[1], 3), entity_top1=round(ent[1], 3), entity_top5=round(ent[5], 3)),
+    json.dump(dict(L=L_READ, N=len(R), held=len(te), value_readable=round(value, 3),
+                   relation_acc=round(rel_acc, 3), entity_top5=round(ent_top5, 3)),
               open("decode.json", "w"), indent=1, default=float)
     log("\nwrote decode.json")
 

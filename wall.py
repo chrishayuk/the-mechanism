@@ -83,7 +83,7 @@ def main():
 
     # concrete demo: a FIXED place (name + facts hand-chosen, verified amplify-strongest) so the on-screen
     # NAME is locked run-to-run. The 40-entity tally above is the statistical claim; this is the illustration.
-    DEMO_NAME = "Zelvia"; DEMO = {"capital": "Cairo", "currency": "Rand", "language": "Tamil"}
+    DEMO_NAME = "Marn"; DEMO = {"capital": "Cairo", "currency": "Rand", "language": "Tamil"}
     dtid = {r: tid_of(DEMO[r]) for r in REL}
     dpacked = ALPHA * np.sum([edir(dtid[r]) for r in REL], axis=0)
     log(f"\n=== WATCH ONE PLACE — packed channel injected, ask it 3 different questions ===")

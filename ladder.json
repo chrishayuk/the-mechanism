@@ -1,0 +1,10 @@
+{
+ "N": 8,
+ "D": 8,
+ "read": 1.0,
+ "count": 1.0,
+ "majority": 1.0,
+ "parity_linear": 0.485,
+ "parity_raw": 0.494,
+ "parity_depth": 1.0
+}

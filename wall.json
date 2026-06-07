@@ -5,5 +5,5 @@
  "C0_novel": 0.0,
  "C1_single": 1.0,
  "C2_packed": 0.35,
- "query_independence": 0.875
+ "query_independence": 0.85
 }

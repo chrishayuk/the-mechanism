@@ -93,9 +93,10 @@ def main():
     for ratio in (1, 5, 13, 19):
         d = K if ratio <= 1 else max(2, round(K / ratio))
         atoms = harmonic_atoms(K, d, 0)
+        coh = float(np.max(np.abs(atoms @ atoms.T - np.eye(K))))     # coherence = how hard the directions press on each other
         exact = sum(decode(pack([atoms[i] for i in p]), atoms)[0] == set(p) for p in places)
-        out[f"ratio_{ratio}"] = dict(d=d, exact_set=round(exact / N, 3))
-        print(f"  ratio {ratio:>2} (K={K} relation-types -> {d} slots): exact-set recovery {exact/N:.3f}")
+        out[f"ratio_{ratio}"] = dict(d=d, coherence=round(coh, 3), exact_set=round(exact / N, 3))
+        print(f"  ratio {ratio:>2} (K={K} -> {d} slots, coherence {coh:.2f}): exact-set recovery {exact/N:.3f}")
     print(f"\n  {N} places x {K} relation-types, packed by hand; the SAME decode() reads each back exactly —")
     print(f"  even crammed ~13x tighter than should fit. I built both halves: pack() and decode().")
     json.dump(dict(K=K, active=ACTIVE, n_entities=N, results=out), open("pack.json", "w"), indent=1)

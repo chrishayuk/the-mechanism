@@ -5,18 +5,22 @@
  "results": {
   "ratio_1": {
    "d": 1241,
+   "coherence": 0.001,
    "exact_set": 1.0
   },
   "ratio_5": {
    "d": 248,
+   "coherence": 0.261,
    "exact_set": 1.0
   },
   "ratio_13": {
    "d": 95,
+   "coherence": 0.46,
    "exact_set": 1.0
   },
   "ratio_19": {
    "d": 65,
+   "coherence": 0.542,
    "exact_set": 0.902
   }
  }
