@@ -3,3 +3,9 @@ SCRIPT.md
 
 # regenerable run logs (re-create with: python3 mechanism.py all)
 *.log
+
+# generated visuals (re-create with: python3 visuals/make_visuals.py)
+visuals/out/
+
+# python bytecode
+__pycache__/
